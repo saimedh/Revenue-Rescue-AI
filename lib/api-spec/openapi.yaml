@@ -3,13 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Revenue Rescue AI operations API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: dashboard
+    description: Overview metrics and activity
+  - name: recoveries
+    description: Recovery case operations
+  - name: payments
+    description: Payment operations
+  - name: customers
+    description: Customer intelligence
+  - name: analytics
+    description: Recovery performance analytics
+  - name: agents
+    description: AI agent status
 paths:
   /healthz:
     get:
@@ -24,7 +36,216 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard/metrics:
+    get:
+      operationId: getDashboardMetrics
+      tags: [dashboard]
+      summary: Get dashboard metrics
+      responses:
+        "200":
+          description: Current revenue recovery metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardMetrics"
+  /dashboard/activity:
+    get:
+      operationId: getDashboardActivity
+      tags: [dashboard]
+      summary: Get recent agent activity
+      responses:
+        "200":
+          description: Recent agent activity feed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+  /dashboard/strategies:
+    get:
+      operationId: getDashboardStrategies
+      tags: [dashboard]
+      summary: Get strategy performance
+      responses:
+        "200":
+          description: Strategy performance summary
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StrategyPerformance"
+  /payments:
+    get:
+      operationId: getPayments
+      tags: [payments]
+      summary: List failed payments
+      responses:
+        "200":
+          description: Failed payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+  /payments/simulate-failure:
+    post:
+      operationId: simulatePaymentFailure
+      tags: [payments]
+      summary: Simulate a failed payment and create a recovery case
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationInput"
+      responses:
+        "201":
+          description: Simulated payment and recovery case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+  /customers:
+    get:
+      operationId: getCustomers
+      tags: [customers]
+      summary: List customer intelligence profiles
+      responses:
+        "200":
+          description: Customer profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+  /recoveries:
+    get:
+      operationId: getRecoveries
+      tags: [recoveries]
+      summary: List recovery cases
+      responses:
+        "200":
+          description: Recovery cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecoveryCase"
+  /recoveries/{id}:
+    get:
+      operationId: getRecovery
+      tags: [recoveries]
+      summary: Get a recovery case
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Recovery case detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+        "404":
+          description: Recovery case not found
+  /recoveries/{id}/analyze:
+    post:
+      operationId: analyzeRecovery
+      tags: [recoveries]
+      summary: Run the AI recovery analysis
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Analyzed recovery case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+  /recoveries/{id}/approve:
+    post:
+      operationId: approveRecovery
+      tags: [recoveries]
+      summary: Approve a sensitive recovery action
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Approved recovery case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+  /recoveries/{id}/reject:
+    post:
+      operationId: rejectRecovery
+      tags: [recoveries]
+      summary: Reject a sensitive recovery action
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Rejected recovery case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+  /recoveries/{id}/execute:
+    post:
+      operationId: executeRecovery
+      tags: [recoveries]
+      summary: Execute the selected recovery action
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Executed recovery case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecoveryCase"
+  /analytics:
+    get:
+      operationId: getAnalytics
+      tags: [analytics]
+      summary: Get analytics breakdowns
+      responses:
+        "200":
+          description: Recovery analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analytics"
+  /agents/status:
+    get:
+      operationId: getAgentsStatus
+      tags: [agents]
+      summary: Get AI agent status
+      responses:
+        "200":
+          description: AI agent status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentStatus"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +254,183 @@ components:
           type: string
       required:
         - status
+    DashboardMetrics:
+      type: object
+      required: [failedRevenue, recoveredRevenue, recoveryRate, revenueAtRisk, activeCases, recoveredThisMonth, additionalRevenue]
+      properties:
+        failedRevenue: { type: number }
+        recoveredRevenue: { type: number }
+        recoveryRate: { type: number }
+        revenueAtRisk: { type: number }
+        activeCases: { type: number }
+        recoveredThisMonth: { type: number }
+        additionalRevenue: { type: number }
+    ActivityItem:
+      type: object
+      required: [id, title, description, type, createdAt]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string }
+        type: { type: string }
+        createdAt: { type: string }
+        caseId: { type: ["string", "null"] }
+    StrategyPerformance:
+      type: object
+      required: [strategy, attempts, recovered, successRate, revenue]
+      properties:
+        strategy: { type: string }
+        attempts: { type: number }
+        recovered: { type: number }
+        successRate: { type: number }
+        revenue: { type: number }
+    Payment:
+      type: object
+      required: [id, customerId, customerName, amount, currency, status, failureReason, paymentMethod, retryCount, createdAt]
+      properties:
+        id: { type: string }
+        customerId: { type: string }
+        customerName: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        status: { type: string }
+        failureReason: { type: string }
+        paymentMethod: { type: string }
+        retryCount: { type: number }
+        createdAt: { type: string }
+    SimulationInput:
+      type: object
+      properties:
+        amount: { type: number, minimum: 100 }
+        failureReason: { type: string }
+        paymentMethod: { type: string }
+    Customer:
+      type: object
+      required: [id, name, email, segment, lifetimeValue, totalPayments, successfulPayments, failedPayments, previousRecoveryRate, preferredMethod, riskLevel]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        email: { type: string }
+        segment: { type: string }
+        lifetimeValue: { type: number }
+        totalPayments: { type: number }
+        successfulPayments: { type: number }
+        failedPayments: { type: number }
+        previousRecoveryRate: { type: number }
+        preferredMethod: { type: string }
+        preferredTime: { type: string }
+        riskLevel: { type: string }
+    TimelineEvent:
+      type: object
+      required: [id, label, detail, timestamp, completed]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        detail: { type: string }
+        timestamp: { type: string }
+        completed: { type: boolean }
+    AgentInsight:
+      type: object
+      required: [agent, status, summary, confidence]
+      properties:
+        agent: { type: string }
+        status: { type: string }
+        summary: { type: string }
+        confidence: { type: number }
+    RecoveryCase:
+      type: object
+      required: [id, paymentId, customerId, customerName, amount, currency, failureReason, paymentMethod, retryCount, recoveryScore, recoveryProbability, riskLevel, strategy, recommendedTime, status, reasoning, createdAt, timeline, insights, requiresApproval]
+      properties:
+        id: { type: string }
+        paymentId: { type: string }
+        customerId: { type: string }
+        customerName: { type: string }
+        amount: { type: number }
+        currency: { type: string }
+        failureReason: { type: string }
+        paymentMethod: { type: string }
+        retryCount: { type: number }
+        recoveryScore: { type: number }
+        recoveryProbability: { type: number }
+        riskLevel: { type: string }
+        strategy: { type: string }
+        recommendedTime: { type: string }
+        status: { type: string }
+        reasoning: { type: string }
+        createdAt: { type: string }
+        requiresApproval: { type: boolean }
+        approvalStatus: { type: ["string", "null"] }
+        outcome: { type: ["string", "null"] }
+        timeline:
+          type: array
+          items: { $ref: "#/components/schemas/TimelineEvent" }
+        insights:
+          type: array
+          items: { $ref: "#/components/schemas/AgentInsight" }
+    ApprovalInput:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject, modify]
+        note: { type: ["string", "null"] }
+    Analytics:
+      type: object
+      required: [trend, failureReasons, paymentMethods, comparison]
+      properties:
+        trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendPoint"
+        failureReasons:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+        paymentMethods:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakdownPoint"
+        comparison:
+          type: object
+          required: [traditional, ai, additionalRevenue]
+          properties:
+            traditional: { type: number }
+            ai: { type: number }
+            additionalRevenue: { type: number }
+    TrendPoint:
+      type: object
+      required: [label, failed, recovered, rate]
+      properties:
+        label: { type: string }
+        failed: { type: number }
+        recovered: { type: number }
+        rate: { type: number }
+    BreakdownPoint:
+      type: object
+      required: [label, value, amount]
+      properties:
+        label: { type: string }
+        value: { type: number }
+        amount: { type: number }
+    AgentStatus:
+      type: object
+      required: [overall, updatedAt, agents]
+      properties:
+        overall: { type: string }
+        updatedAt: { type: string }
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/AgentNode"
+    AgentNode:
+      type: object
+      required: [id, name, role, status, confidence, processed]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role: { type: string }
+        status: { type: string }
+        confidence: { type: number }
+        processed: { type: number }
 

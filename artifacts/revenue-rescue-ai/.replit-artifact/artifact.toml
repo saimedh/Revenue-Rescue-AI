@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Revenue Rescue AI"
+description = "A premium fintech operations dashboard that helps businesses recover failed payments with AI-assisted analysis, smart retry recommendations, approval workflows, and live recovery analytics."
+version = "1.0.0"
+id = "artifacts/revenue-rescue-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25062
+
+[services.development]
+run = "pnpm --filter @workspace/revenue-rescue-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/revenue-rescue-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/revenue-rescue-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25062"
+BASE_PATH = "/"

@@ -1,0 +1,14 @@
+{
+  "roc_auc": 0.5295,
+  "features": [
+    "amount",
+    "retry_count",
+    "customer_lifetime_value",
+    "previous_success_rate",
+    "previous_recovery_rate",
+    "hour",
+    "day_of_week",
+    "failure_reason",
+    "payment_method"
+  ]
+}
